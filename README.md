@@ -78,3 +78,16 @@ To update `RegulatorService` one needs to call `replaceService` function with pa
 * `_locked` is `true` or `false`. It `true`, token will be locked, if `false` token will be unlocked
 * Connect the wallet you are using
 * Make sure all variables are correct and click `write` and approve transaction on your wallet
+## Error message query - find out the reason of unsuccessfull transfer
+* Video tutorial: 
+#### Prepare for interaction
+* The same as above
+#### Get TX hash
+* TX hash should be delivered by user, without it we cannot do anything
+#### Get error code
+* Open TX on etherscan and go to `event logs` tab
+* Find `CheckStatus` event and look at `Data` section. Choose `number` from dropbox on first row. It should return a single number. Copy it.
+#### Get error message
+* Open `RegulatorService` contract on etherscan and click `Read Contract` tab.
+* Find `messageForReason` function and paste error code (the number you copided) to `_reason` input.
+* Click query and read the reason.
