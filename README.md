@@ -78,8 +78,8 @@ To update `RegulatorService` one needs to call `replaceService` function with pa
 * `_locked` is `true` or `false`. It `true`, token will be locked, if `false` token will be unlocked
 * Connect the wallet you are using
 * Make sure all variables are correct and click `write` and approve transaction on your wallet
-## Error message query - find out the reason of unsuccessfull transfer
-* Video tutorial: 
+## Error message query - find out the reason of an unsuccessful transfer
+* Video tutorial: https://youtu.be/OnG6zPpe75U
 #### Get TX hash
 * TX hash should be delivered by user, without it we cannot do anything
 #### Get error code
