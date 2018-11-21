@@ -80,8 +80,6 @@ To update `RegulatorService` one needs to call `replaceService` function with pa
 * Make sure all variables are correct and click `write` and approve transaction on your wallet
 ## Error message query - find out the reason of unsuccessfull transfer
 * Video tutorial: 
-#### Prepare for interaction
-* The same as above
 #### Get TX hash
 * TX hash should be delivered by user, without it we cannot do anything
 #### Get error code
