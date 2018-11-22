@@ -4,8 +4,8 @@ var RegulatorService = artifacts.require("./RegulatorService.sol");
 var ServiceRegistry = artifacts.require("./ServiceRegistry.sol");
 
 module.exports = function(deployer) {
-  let name = "Evaki Test 1"
-  let symbol = "EVK1"
+  let name = "Evaki Test 2"
+  let symbol = "EVK2"
 
   deployer.then(() => {
       return deployer.deploy(RegulatorService, {gas: 3000000});
