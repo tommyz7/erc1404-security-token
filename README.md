@@ -94,4 +94,5 @@ To update `RegulatorService` one needs to call `replaceService` function with pa
 * Open https://www.myetherwallet.com/#contracts and RegulatedTokenERC1404 on https://rinkeby.etherscan.io/address/0x5d407b51fda42843ffc2b989660a173a2a4b38be#code
 * Copy address and ABI to form and click `access`
 #### Run `burn` function
+* Choose `burn` function from dropbox
 * As `_value` put number of tokens you want to burn. Remember about 18 decinal points so if you want to burn 1 EVK, you need to put number `1000000000000000000` as `_value`
