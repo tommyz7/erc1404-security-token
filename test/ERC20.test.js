@@ -343,53 +343,62 @@ contract('Mintable', function ([owner, anotherAccount]) {
 // });
 
 
-// contract('BurnableToken', function ([owner]) {
-//   const initialBalance = 1000;
+contract('BurnableToken', function ([owner, recipient, anotherAccount]) {
+  const initialBalance = web3.toWei(0.1, "ether");
 
-//   beforeEach(async function () {
-//     this.token = await RegulatedTokenERC1404.new(accounts[1], tokenName, tokenSymbol);
-//     let result = await this.token.mint(owner, initialBalance);
-//   });
+  beforeEach(async function () {
 
-//   describe('as a basic burnable token', function () {
-//     const from = owner;
+    this.service = await RegulatorService.new({from: owner})
+    this.registry = await ServiceRegistry.new(this.service.address)
+    this.token = await RegulatedTokenERC1404.new(this.registry.address, tokenName, tokenSymbol);
+    await this.service.setPermission(this.token.address, owner, PERM_TRANSFER, {from: owner})
+    await this.service.setPermission(this.token.address, recipient, PERM_RECEIVE, {from: owner})
+    await this.service.setPermission(this.token.address, anotherAccount, PERM_RECEIVE, {from: owner})
+    await this.service.setPartialTransfers(this.token.address, true, {from: owner})
+    let result = await this.token.mint(owner, initialBalance);
 
-//     describe('when the given amount is not greater than balance of the sender', function () {
-//       const amount = 100;
 
-//       beforeEach(async function () {
-//         ({ logs: this.logs } = await this.token.burn(amount, { from }));
-//       });
+  });
 
-//       it('burns the requested amount', async function () {
-//         const balance = await this.token.balanceOf(from);
-//         balance.should.be.bignumber.equal(initialBalance - amount);
-//       });
+  describe('as a basic burnable token', function () {
+    const from = owner;
 
-//       it('emits a burn event', async function () {
-//         const event = await inLogs(this.logs, 'Burn');
-//         event.args.burner.should.eq(owner);
-//         event.args.value.should.be.bignumber.equal(amount);
-//       });
+    describe('when the given amount is not greater than balance of the sender', function () {
+      const amount = 100;
 
-//       it('emits a transfer event', async function () {
-//         const event = await inLogs(this.logs, 'Transfer');
-//         event.args.from.should.eq(owner);
-//         event.args.to.should.eq(ZERO_ADDRESS);
-//         event.args.value.should.be.bignumber.equal(amount);
-//       });
-//     });
+      beforeEach(async function () {
+        ({ logs: this.logs } = await this.token.burn(amount, { from }));
+      });
 
-//     describe('when the given amount is greater than the balance of the sender', function () {
-//       const amount = initialBalance + 1;
+      it('burns the requested amount', async function () {
+        const balance = await this.token.balanceOf(from);
+        balance.should.be.bignumber.equal(initialBalance - amount);
+      });
 
-//       it('reverts', async function () {
-//         await assertRevert(this.token.burn(amount, { from }));
-//       });
-//     });
-//   });
+      it('emits a burn event', async function () {
+        const event = await inLogs(this.logs, 'Burn');
+        event.args.burner.should.eq(owner);
+        event.args.value.should.be.bignumber.equal(amount);
+      });
 
-// });
+      it('emits a transfer event', async function () {
+        const event = await inLogs(this.logs, 'Transfer');
+        event.args.from.should.eq(owner);
+        event.args.to.should.eq(ZERO_ADDRESS);
+        event.args.value.should.be.bignumber.equal(amount);
+      });
+    });
+
+    describe('when the given amount is greater than the balance of the sender', function () {
+      const amount = initialBalance + 1;
+
+      it('reverts', async function () {
+        await assertRevert(this.token.burn(amount, { from }));
+      });
+    });
+  });
+
+});
 
 
 // contract('PausableToken', function ([_, owner, recipient, anotherAccount]) {
@@ -1129,11 +1138,17 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
 });
 
 
-// contract('StandardBurnableToken', function ([owner, burner]) {
+// contract('StandardBurnableToken', function ([owner, burner, recipient, anotherAccount]) {
 //   const initialBalance = 1000;
   
 //   beforeEach(async function () {
-//     this.token = await RegulatedTokenERC1404.new(accounts[1], tokenName, tokenSymbol);
+//     this.service = await RegulatorService.new({from: owner})
+//     this.registry = await ServiceRegistry.new(this.service.address)
+//     this.token = await RegulatedTokenERC1404.new(this.registry.address, tokenName, tokenSymbol);
+//     await this.service.setPermission(this.token.address, owner, PERM_TRANSFER, {from: owner})
+//     await this.service.setPermission(this.token.address, recipient, PERM_RECEIVE, {from: owner})
+//     await this.service.setPermission(this.token.address, anotherAccount, PERM_RECEIVE, {from: owner})
+//     await this.service.setPartialTransfers(this.token.address, true, {from: owner})
 //     let result = await this.token.mint(owner, initialBalance);
 //   });
 

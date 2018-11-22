@@ -18,11 +18,12 @@ pragma solidity ^0.4.24;
 
 import 'zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol';
 import 'zeppelin-solidity/contracts/token/ERC20/MintableToken.sol';
+import 'zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol';
 import './ServiceRegistry.sol';
 import './RegulatorService.sol';
 
 /// @notice An ERC-20 token that has the ability to check for trade validity
-contract RegulatedToken is DetailedERC20, MintableToken {
+contract RegulatedToken is DetailedERC20, MintableToken, BurnableToken {
 
   /**
    * @notice R-Token decimals setting (used when constructing DetailedERC20)
