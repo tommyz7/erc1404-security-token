@@ -38,14 +38,14 @@ To update `RegulatorService` one needs to call `replaceService` function with pa
 
 # Tutorials for most common scenarios
 ### Helpful links
-* RegulatedTokenERC1404 https://rinkeby.etherscan.io/address/0x5d407b51fda42843ffc2b989660a173a2a4b38be#code
-* RegulatorService https://rinkeby.etherscan.io/address/0x4755a9595ee4f592126079b5a87742fde9c8eede#code
-* ServiceRegistry https://rinkeby.etherscan.io/address/0xd8257bcae728825580bf2d689b38f4b34e054dff#code
+* RegulatedTokenERC1404 https://rinkeby.etherscan.io/address/0x09D9e4A7ADe5e7c32623E3794093d09cbc8865f5#code
+* RegulatorService https://rinkeby.etherscan.io/address/0xA325ed31365fdbB5E32fcedF36933081184EC74d#code
+* ServiceRegistry https://rinkeby.etherscan.io/address/0x5Fd808eb0C513dDE84FE949e73a4b28b0AB5f27b#code
 
 ## Mint tokens
 * Video tutorial: https://youtu.be/voRP7OCTMTA
 #### Prepare for interaction
-* Open https://www.myetherwallet.com/#contracts and RegulatedTokenERC1404 on https://rinkeby.etherscan.io/address/0x5d407b51fda42843ffc2b989660a173a2a4b38be#code
+* Open https://www.myetherwallet.com/#contracts and RegulatedTokenERC1404 on https://rinkeby.etherscan.io/address/0x09D9e4A7ADe5e7c32623E3794093d09cbc8865f5#code
 * Copy address and ABI to form and click `access`
 #### Mint tokens
 * Choose `mint` function from dropdown
@@ -56,10 +56,10 @@ To update `RegulatorService` one needs to call `replaceService` function with pa
 ## Whitelist an address (wallet) with send, receiver or send & receiver permissions
 * Video tutorial: https://youtu.be/eVizeg9-vZg
 #### Prepare for interaction
-* Open https://www.myetherwallet.com/#contracts and RegulatorService on https://rinkeby.etherscan.io/address/0x4755a9595ee4f592126079b5a87742fde9c8eede#code
+* Open https://www.myetherwallet.com/#contracts and RegulatorService on https://rinkeby.etherscan.io/address/0xA325ed31365fdbB5E32fcedF36933081184EC74d#code
 ### Set permission
 * Choose `setPermission` function from dropdown
-* `_token` is an address of our token => `0x5D407B51fDa42843FFc2B989660A173A2A4B38bE`
+* `_token` is an address of our token => `0x09D9e4A7ADe5e7c32623E3794093d09cbc8865f5`
 * `_participant` is the address (wallet) we are assigning permissions for
 * `_permission` is the permission to be set.
 ** 1 - Permission for allowing a participant to send tokens
@@ -70,11 +70,11 @@ To update `RegulatorService` one needs to call `replaceService` function with pa
 ## Lock and unlock the token
 * Video tutorial: https://youtu.be/g2oNX8F7zqg
 #### Prepare for interaction
-* Open https://www.myetherwallet.com/#contracts and RegulatorService on https://rinkeby.etherscan.io/address/0x4755a9595ee4f592126079b5a87742fde9c8eede#code
+* Open https://www.myetherwallet.com/#contracts and RegulatorService on https://rinkeby.etherscan.io/address/0xA325ed31365fdbB5E32fcedF36933081184EC74d#code
 * Copy address and ABI to form and click `access`
 #### Lock or unlock the token
 * Choose `setLocked` function from dropdown
-* `_token` is an address of our token => `0x5D407B51fDa42843FFc2B989660A173A2A4B38bE`
+* `_token` is an address of our token => `0x09D9e4A7ADe5e7c32623E3794093d09cbc8865f5`
 * `_locked` is `true` or `false`. It `true`, token will be locked, if `false` token will be unlocked
 * Connect the wallet you are using
 * Make sure all variables are correct and click `write` and approve transaction on your wallet
@@ -91,7 +91,7 @@ To update `RegulatorService` one needs to call `replaceService` function with pa
 * Click query and read the reason.
 ## Token burn
 #### Prepare for interaction
-* Open https://www.myetherwallet.com/#contracts and RegulatedTokenERC1404 on https://rinkeby.etherscan.io/address/0x5d407b51fda42843ffc2b989660a173a2a4b38be#code
+* Open https://www.myetherwallet.com/#contracts and RegulatedTokenERC1404 on https://rinkeby.etherscan.io/address/0x09D9e4A7ADe5e7c32623E3794093d09cbc8865f5#code
 * Copy address and ABI to form and click `access`
 #### Run `burn` function
 * Choose `burn` function from dropbox
