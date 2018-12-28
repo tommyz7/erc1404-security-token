@@ -25,6 +25,7 @@ contract('ServiceRegistry', async accounts => {
   let newOwner;
   let hacker;
   let participant;
+  let ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
   let service;
   let registry;
@@ -70,7 +71,7 @@ contract('ServiceRegistry', async accounts => {
 
     it('should NOT allow an invalid address', async () => {
       await expectThrow(registry.replaceService(participant));
-      await expectThrow(registry.replaceService(0));
+      await expectThrow(registry.replaceService(ZERO_ADDRESS));
       assert.equal(await registry.service(), service.address);
     });
 

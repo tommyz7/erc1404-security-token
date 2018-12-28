@@ -6,6 +6,7 @@ import decodeLogs from 'zeppelin-solidity/test/helpers/decodeLogs';
 
 
 const BigNumber = web3.BigNumber;
+var BN = web3.utils.BN;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const tokenName = 'RegulatedTokenERC1404';
 const tokenSymbol = 'RToken';
@@ -48,7 +49,7 @@ contract('SimpleToken', accounts => {
 
   it('has 18 decimals', async function () {
     const decimals = await token.decimals();
-    assert(decimals.eq(18));
+    decimals.toNumber().should.eq(18);
   });
 });
 
@@ -82,7 +83,7 @@ contract('Ownable', function (accounts) {
 
   it('should guard ownership against stuck state', async function () {
     let originalOwner = await ownable.owner();
-    await assertRevert(ownable.transferOwnership(null, { from: originalOwner }));
+    await assertRevert(ownable.transferOwnership(ZERO_ADDRESS, { from: originalOwner }));
   });
 });
 
@@ -156,7 +157,7 @@ contract('BaseToken', function ([_, owner, recipient, anotherAccount]) {
           const event = await inLogs(logs, 'Transfer');
           event.args.from.should.eq(owner);
           event.args.to.should.eq(to);
-          event.args.value.should.be.bignumber.equal(amount);
+          event.args.value.toNumber().should.equal(amount);
         });
       });
     });
@@ -174,7 +175,7 @@ contract('BaseToken', function ([_, owner, recipient, anotherAccount]) {
 
 contract('Mintable', function ([owner, anotherAccount]) {
   beforeEach(async function () {
-    const cap = web3.toWei(100, "ether");
+    const cap = web3.utils.toWei('100', "ether");
     this.service = await RegulatorService.new({from: owner})
     this.registry = await ServiceRegistry.new(this.service.address)
     this.token = await RegulatedTokenERC1404.new(this.registry.address, tokenName, tokenSymbol);
@@ -344,7 +345,7 @@ contract('Mintable', function ([owner, anotherAccount]) {
 
 
 contract('BurnableToken', function ([owner, recipient, anotherAccount]) {
-  const initialBalance = web3.toWei(0.1, "ether");
+  const initialBalance = web3.utils.toWei('0.1', "ether");
 
   beforeEach(async function () {
 
@@ -372,20 +373,22 @@ contract('BurnableToken', function ([owner, recipient, anotherAccount]) {
 
       it('burns the requested amount', async function () {
         const balance = await this.token.balanceOf(from);
-        balance.should.be.bignumber.equal(initialBalance - amount);
+        let init = initialBalance - amount;
+        let initbal = new BN(init.toString());
+        balance.toString().should.equal(initbal.toString());
       });
 
       it('emits a burn event', async function () {
         const event = await inLogs(this.logs, 'Burn');
         event.args.burner.should.eq(owner);
-        event.args.value.should.be.bignumber.equal(amount);
+        event.args.value.toNumber().should.equal(amount);
       });
 
       it('emits a transfer event', async function () {
         const event = await inLogs(this.logs, 'Transfer');
         event.args.from.should.eq(owner);
         event.args.to.should.eq(ZERO_ADDRESS);
-        event.args.value.should.be.bignumber.equal(amount);
+        event.args.value.toNumber().should.equal(amount);
       });
     });
 
@@ -737,7 +740,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
           const event = await inLogs(logs, 'Transfer');
           event.args.from.should.eq(owner);
           event.args.to.should.eq(to);
-          event.args.value.should.be.bignumber.equal(amount);
+          event.args.value.toNumber().should.equal(amount);
         });
       });
     });
@@ -765,7 +768,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
           assert.equal(logs[0].event, 'Approval');
           assert.equal(logs[0].args.owner, owner);
           assert.equal(logs[0].args.spender, spender);
-          assert(logs[0].args.value.eq(amount));
+          logs[0].args.value.toNumber().should.eq(amount);
         });
 
         describe('when there was no approved amount before', function () {
@@ -801,7 +804,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
           assert.equal(logs[0].event, 'Approval');
           assert.equal(logs[0].args.owner, owner);
           assert.equal(logs[0].args.spender, spender);
-          assert(logs[0].args.value.eq(amount));
+          logs[0].args.value.toNumber().should.eq(amount);
         });
 
         describe('when there was no approved amount before', function () {
@@ -846,7 +849,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
         assert.equal(logs[0].event, 'Approval');
         assert.equal(logs[0].args.owner, owner);
         assert.equal(logs[0].args.spender, spender);
-        assert(logs[0].args.value.eq(amount));
+        logs[0].args.value.toNumber().should.eq(amount);
       });
     });
   });
@@ -879,7 +882,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
             await this.token.transferFrom(owner, to, amount, { from: spender });
 
             const allowance = await this.token.allowance(owner, spender);
-            assert(allowance.eq(0));
+            allowance.toNumber().should.eq(0);
           });
 
           it('emits a transfer event', async function () {
@@ -887,7 +890,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
             const event = await inLogs(logs, 'Transfer');
             event.args.from.should.eq(owner);
             event.args.to.should.eq(to);
-            event.args.value.should.be.bignumber.equal(amount);
+            event.args.value.toNumber().should.equal(amount);
           });
         });
 
@@ -951,7 +954,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
           assert.equal(logs[0].event, 'Approval');
           assert.equal(logs[0].args.owner, owner);
           assert.equal(logs[0].args.spender, spender);
-          assert(logs[0].args.value.eq(0));
+          logs[0].args.value.toNumber().should.eq(0);
         });
 
         describe('when there was no approved amount before', function () {
@@ -987,7 +990,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
           assert.equal(logs[0].event, 'Approval');
           assert.equal(logs[0].args.owner, owner);
           assert.equal(logs[0].args.spender, spender);
-          assert(logs[0].args.value.eq(0));
+          logs[0].args.value.toNumber().should.eq(0);
         });
 
         describe('when there was no approved amount before', function () {
@@ -1032,7 +1035,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
         assert.equal(logs[0].event, 'Approval');
         assert.equal(logs[0].args.owner, owner);
         assert.equal(logs[0].args.spender, spender);
-        assert(logs[0].args.value.eq(0));
+        logs[0].args.value.toNumber().should.eq(0);
       });
     });
   });
@@ -1051,7 +1054,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
           assert.equal(logs[0].event, 'Approval');
           assert.equal(logs[0].args.owner, owner);
           assert.equal(logs[0].args.spender, spender);
-          assert(logs[0].args.value.eq(amount));
+          logs[0].args.value.toNumber().should.eq(amount);
         });
 
         describe('when there was no approved amount before', function () {
@@ -1087,7 +1090,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
           assert.equal(logs[0].event, 'Approval');
           assert.equal(logs[0].args.owner, owner);
           assert.equal(logs[0].args.spender, spender);
-          assert(logs[0].args.value.eq(amount));
+          logs[0].args.value.toNumber().should.eq(amount);
         });
 
         describe('when there was no approved amount before', function () {
@@ -1131,7 +1134,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
         assert.equal(logs[0].event, 'Approval');
         assert.equal(logs[0].args.owner, owner);
         assert.equal(logs[0].args.spender, spender);
-        assert(logs[0].args.value.eq(amount));
+        logs[0].args.value.toNumber().should.eq(amount);
       });
     });
   });

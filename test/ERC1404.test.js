@@ -1,6 +1,7 @@
 const ServiceRegistry = artifacts.require('ServiceRegistry')
 const RegulatorService = artifacts.require('RegulatorService')
 const RegulatedTokenERC1404 = artifacts.require('RegulatedTokenERC1404')
+var BN = web3.utils.BN;
 
 contract('ERC1404', ([sender, recipient, ...accounts]) => {
   const owner = sender
@@ -58,7 +59,7 @@ contract('ERC1404', ([sender, recipient, ...accounts]) => {
     const recipientBalanceAfter = await token.balanceOf(recipient)
     assert(senderBalanceAfter.eq(senderBalanceBefore))
     assert(recipientBalanceAfter.eq(recipientBalanceBefore))
-    assert(reason.eq(CHECK_ESEND))
+    assert.equal(reason, CHECK_ESEND)
     assert.equal(message, ESEND_MESSAGE)
   })
 
@@ -71,7 +72,7 @@ contract('ERC1404', ([sender, recipient, ...accounts]) => {
     const recipientBalanceAfter = await token.balanceOf(recipient)
     assert(senderBalanceAfter.eq(senderBalanceBefore))
     assert(recipientBalanceAfter.eq(recipientBalanceBefore))
-    assert(reason.eq(CHECK_ERECV))
+    assert.equal(reason,CHECK_ERECV)
     assert.equal(message, ERECV_MESSAGE)
   })
 
@@ -84,7 +85,7 @@ contract('ERC1404', ([sender, recipient, ...accounts]) => {
     const recipientBalanceAfter = await token.balanceOf(recipient)
     assert(senderBalanceAfter.eq(senderBalanceBefore))
     assert(recipientBalanceAfter.eq(recipientBalanceBefore))
-    assert(reason.eq(CHECK_EDIVIS))
+    assert.equal(reason, CHECK_EDIVIS)
     assert.equal(message, EDIVIS_MESSAGE)
   })
 
@@ -95,10 +96,10 @@ contract('ERC1404', ([sender, recipient, ...accounts]) => {
     await token.transfer(recipient, transferValue, { from: sender })
     const senderBalanceAfter = await token.balanceOf(sender)
     const recipientBalanceAfter = await token.balanceOf(recipient)
-    assert(reason.eq(CHECK_SUCCESS))
+    assert.equal(reason, CHECK_SUCCESS)
     assert.equal(message, SUCCESS_MESSAGE)
-    assert(senderBalanceAfter.eq(senderBalanceBefore.minus(transferValue)))
-    assert(recipientBalanceAfter.eq(recipientBalanceBefore.plus(transferValue)))
+    assert.equal(senderBalanceAfter.toString(), senderBalanceBefore.sub(new BN(transferValue)).toString())
+    assert.equal(recipientBalanceAfter.toString(), recipientBalanceBefore.add(new BN(transferValue)).toString())
   })
 
   it('should handle CHECK_ELOCKED condition', async () => {
@@ -110,7 +111,7 @@ contract('ERC1404', ([sender, recipient, ...accounts]) => {
     const recipientBalanceAfter = await token.balanceOf(recipient)
     assert(senderBalanceAfter.eq(senderBalanceBefore))
     assert(recipientBalanceAfter.eq(recipientBalanceBefore))
-    assert(reason.eq(CHECK_ELOCKED))
+    assert.equal(reason, CHECK_ELOCKED)
     assert.equal(message, ELOCKED_MESSAGE)
   })
 })

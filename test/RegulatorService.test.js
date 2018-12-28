@@ -13,12 +13,13 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-
 import { expectThrow } from 'zeppelin-solidity/test/helpers/expectThrow';
 import { inLogs } from 'zeppelin-solidity/test/helpers/expectEvent';
+var BN = web3.utils.BN;
 const RegulatedTokenERC1404 = artifacts.require('RegulatedTokenERC1404.sol');
 const RegulatorService = artifacts.require('RegulatorService.sol');
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const PERM_NONE = 0x0;
 const PERM_SEND = 0x1;
 const PERM_RECEIVE = 0x2;
@@ -82,8 +83,8 @@ contract('RegulatorService', async accounts => {
       });
 
       it('allows admin to invoke', async () => {
-        await service.setPermission.call(0, account, 0, { from: admin });
-        await expectThrow(service.setPermission.call(0, account, 0, { from: other }));
+        await service.setPermission.call(ZERO_ADDRESS, account, 0, { from: admin });
+        await expectThrow(service.setPermission.call(ZERO_ADDRESS, account, 0, { from: other }));
       });
     });
 
@@ -123,20 +124,21 @@ contract('RegulatorService', async accounts => {
   });
 
   describe('partial trades', () => {
-    const roundAmount = web3.toWei(100, "ether");
-    const partialAmount = web3.toWei(100.111, "ether");
+    const roundAmount = web3.utils.toWei('100', "ether");
+    const partialAmount = web3.utils.toWei('100.111', "ether");
     beforeEach(async () => {
       await service.setLocked(token.address, false);
       await service.setPermission(token.address, owner, PERM_TRANSFER);
       await service.setPermission(token.address, account, PERM_TRANSFER);
 
       // const decimals = 4;
-      const expectedTotalSupply = 2000 * 10 ** await token.decimals.call();
+      let expectedTotalSupply = 2000 * 10 ** await token.decimals.call();
+      expectedTotalSupply = new BN(expectedTotalSupply.toString());
 
       // await token.setDecimals(decimals);
       await token.mint(owner, expectedTotalSupply);
-
-      assert.equal(expectedTotalSupply, await token.totalSupply.call());
+      let supply = await token.totalSupply.call();
+      assert.equal(expectedTotalSupply.toString(), supply.toString());
 
       assertResult(await service.check.call(token.address, spender, owner, account, partialAmount), false, EDIVIS);
     });
@@ -188,7 +190,7 @@ contract('RegulatorService', async accounts => {
 
     describe('when the new admin is NOT valid', () => {
       it('throws', async () => {
-        await expectThrow(service.transferAdmin(0));
+        await expectThrow(service.transferAdmin(ZERO_ADDRESS));
         assert.equal(await service.admin(), owner);
       });
     });
@@ -200,9 +202,8 @@ contract('RegulatorService', async accounts => {
     });
 
     it('logs an event', async () => {
-      const { logs } = await service.setPermission(token.address, account, PERM_SEND);
-
-      const event = await inLogs(logs, 'LogPermissionSet');
+      const tx = await service.setPermission(token.address, account, PERM_SEND);
+      const event = await inLogs(tx.logs, 'LogPermissionSet');
       event.args.token.should.eq(token.address);
       event.args.participant.should.eq(account);
       event.args.permission.toNumber().should.eq(PERM_SEND);
@@ -242,8 +243,8 @@ contract('RegulatorService', async accounts => {
       });
 
       it('denies trades', async () => {
-        assertResult(await service.check.call(token.address, spender, owner, '0x0', 0), false, ERECV);
-        assertResult(await service.check.call(token.address, spender, '0x0', owner, 0), false, ESEND);
+        assertResult(await service.check.call(token.address, spender, owner, ZERO_ADDRESS, 0), false, ERECV);
+        assertResult(await service.check.call(token.address, spender, ZERO_ADDRESS, owner, 0), false, ESEND);
       });
     });
 
