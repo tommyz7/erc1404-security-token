@@ -8,11 +8,11 @@ module.exports = function(deployer) {
   let symbol = "STT"
 
   deployer.then(() => {
-      return deployer.deploy(RegulatorService, {gas: 3000000});
+      return deployer.deploy(RegulatorService, {gas: 6000000});
   }).then((result) => {
       return RegulatorService.deployed();
   }).then((service) => {
-      return deployer.deploy(ServiceRegistry, service.address, {gas: 3000000});
+      return deployer.deploy(ServiceRegistry, service.address, {gas: 6000000});
   }).then((result) => {
       return ServiceRegistry.deployed();
   }).then((registry) => {
@@ -21,6 +21,6 @@ module.exports = function(deployer) {
         registry.address,
         name,
         symbol,
-        {gas: 3000000});
+        {gas: 6000000});
   });
 };
