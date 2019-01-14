@@ -38,10 +38,14 @@ To update `RegulatorService` one needs to call `replaceService` function with pa
 
 # Tutorials for most common scenarios
 ### Helpful links
+### Rinkeby network
 * RegulatedTokenERC1404 https://rinkeby.etherscan.io/address/0x09D9e4A7ADe5e7c32623E3794093d09cbc8865f5#code
 * RegulatorService https://rinkeby.etherscan.io/address/0xA325ed31365fdbB5E32fcedF36933081184EC74d#code
 * ServiceRegistry https://rinkeby.etherscan.io/address/0x5Fd808eb0C513dDE84FE949e73a4b28b0AB5f27b#code
-
+### Main network
+* RegulatedTokenERC1404 https://etherscan.io/address/0xae4eae7899d62c000d6fca7d7e1ab83bc4a54f5e#code
+* RegulatorService https://etherscan.io/address/0x7dc8f1c5f3966872c06107c75cccfdd1082a470b#code
+* ServiceRegistry https://etherscan.io/address/0xe25c51e2f3659f44eda877c143ae91630d9a531c#code
 ## Mint tokens
 * Video tutorial: https://youtu.be/voRP7OCTMTA
 #### Prepare for interaction
