@@ -1,26 +1,20 @@
-var Migrations = artifacts.require("./Migrations.sol");
 var RegulatedTokenERC1404 = artifacts.require("./RegulatedTokenERC1404.sol");
 var RegulatorService = artifacts.require("./RegulatorService.sol");
 var ServiceRegistry = artifacts.require("./ServiceRegistry.sol");
 
-module.exports = function(deployer) {
-  let name = "Security Token Test"
-  let symbol = "STT"
+module.exports = async function(deployer, network, accounts) {
+  let name = "Evaki"
+  let symbol = "EVK"
+  let regulatorService, serviceRegistry;
 
-  deployer.then(() => {
-      return deployer.deploy(RegulatorService, {gas: 6000000});
-  }).then((result) => {
-      return RegulatorService.deployed();
-  }).then((service) => {
-      return deployer.deploy(ServiceRegistry, service.address, {gas: 6000000});
-  }).then((result) => {
-      return ServiceRegistry.deployed();
-  }).then((registry) => {
-      return deployer.deploy(
-        RegulatedTokenERC1404,
-        registry.address,
-        name,
-        symbol,
-        {gas: 6000000});
-  });
+  await deployer.deploy(RegulatorService, {gas: 6000000});
+  regulatorService = await RegulatorService.deployed();
+  await deployer.deploy(ServiceRegistry, regulatorService.address, {gas: 6000000});
+  serviceRegistry = await ServiceRegistry.deployed();
+  await deployer.deploy(
+    RegulatedTokenERC1404,
+    serviceRegistry.address,
+    name,
+    symbol,
+    {gas: 6000000});
 };
