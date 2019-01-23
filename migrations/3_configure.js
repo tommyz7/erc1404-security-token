@@ -8,8 +8,11 @@ const provider = new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io');
 
 module.exports = async function(deployer, network, accounts) {
   // Evaki owner
-  let newOwner = "0x798539f1aA6fF2add17E68865F9b530186fd3360"
+  // let newOwner = "0x798539f1aA6fF2add17E68865F9b530186fd3360"
   // let newOwner = "0x7bdede67DDCD32Bb10c20838d6629bb41b12518D"
+  // let newOwner = "0xa8836881DCACE8bF1DaAC141A3dAbD9A4884dBFB"
+  return;
+
   let from;
   if(network == 'local' || network == 'development')
     from = accounts[0]
