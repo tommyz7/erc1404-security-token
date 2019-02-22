@@ -1,5 +1,23 @@
 pragma solidity ^0.4.24;
 
+// File: contracts/RegulatorServiceI.sol
+
+/**
+   Copyright (c) 2017 Harbor Platform, Inc.
+
+   Licensed under the Apache License, Version 2.0 (the “License”);
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an “AS IS” BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 pragma solidity ^0.4.24;
 
 /// @notice Standard interface for `RegulatorService`s
@@ -24,6 +42,7 @@ contract RegulatorServiceI {
   function check(address _token, address _spender, address _from, address _to, uint256 _amount) public returns (uint8);
 }
 
+// File: zeppelin-solidity/contracts/ownership/Ownable.sol
 
 /**
  * @title Ownable
@@ -87,6 +106,7 @@ contract Ownable {
   }
 }
 
+// File: zeppelin-solidity/contracts/token/ERC20/ERC20Basic.sol
 
 /**
  * @title ERC20Basic
@@ -100,6 +120,7 @@ contract ERC20Basic {
   event Transfer(address indexed from, address indexed to, uint256 value);
 }
 
+// File: zeppelin-solidity/contracts/token/ERC20/ERC20.sol
 
 /**
  * @title ERC20 interface
@@ -120,6 +141,7 @@ contract ERC20 is ERC20Basic {
   );
 }
 
+// File: zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol
 
 /**
  * @title DetailedERC20 token
@@ -139,6 +161,7 @@ contract DetailedERC20 is ERC20 {
   }
 }
 
+// File: contracts/RegulatorService.sol
 
 /**
  * @title  On-chain RegulatorService implementation for approving trades
@@ -169,7 +192,17 @@ contract RegulatorService is RegulatorServiceI, Ownable {
      *      transfers allowed).
      */
     bool partialTransfers;
+
+    /**
+     * @dev Mappning for 12 months hold up period for investors.
+     * @param  address investors wallet
+     * @param  uint256 holdingPeriod start date in unix
+     */
+    mapping(address => uint256) holdingPeriod;
   }
+
+  // @dev number of seconds in a year = 365 * 24 * 60 * 60
+  uint256 constant private YEAR = 1 years;
 
   // @dev Check success code & message
   uint8 constant private CHECK_SUCCESS = 0;
@@ -190,6 +223,9 @@ contract RegulatorService is RegulatorServiceI, Ownable {
   // @dev Check error reason: Receiver is not allowed to receive the token
   uint8 constant private CHECK_ERECV = 4;
   string constant private ERECV_MESSAGE = 'Receiver is not allowed to receive the token';
+
+  uint8 constant private CHECK_EHOLDING_PERIOD = 5;
+  string constant private EHOLDING_PERIOD_MESSAGE = 'Sender is still in 12 months holding period';
 
   /// @dev Permission bits for allowing a participant to send tokens
   uint8 constant private PERM_SEND = 0x1;
@@ -219,6 +255,10 @@ contract RegulatorService is RegulatorServiceI, Ownable {
 
   /// @dev Event raised when the admin address changes
   event LogTransferAdmin(address indexed oldAdmin, address indexed newAdmin);
+
+  /// @dev Event raised when holding period start date is set for participant
+  event LogHoldingPeriod(
+    address indexed _token, address indexed _participant, uint256 _startDate);
 
   constructor() public {
     admin = msg.sender;
@@ -268,6 +308,18 @@ contract RegulatorService is RegulatorServiceI, Ownable {
   }
 
   /**
+   * @notice Set initial holding period for investor
+   * @param _token       token address
+   * @param _participant participant address
+   * @param _startDate   start date of holding period in UNIX format
+   */
+  function setHoldingPeriod(address _token, address _participant, uint256 _startDate) onlyAdmins public {
+    settings[_token].holdingPeriod[_participant] = _startDate;
+
+    emit LogHoldingPeriod(_token, _participant, _startDate);
+  }
+
+  /**
    * @dev Allows the owner to transfer admin controls to newAdmin.
    *
    * @param newAdmin The address to transfer admin rights to.
@@ -312,6 +364,10 @@ contract RegulatorService is RegulatorServiceI, Ownable {
       return CHECK_EDIVIS;
     }
 
+    if (settings[_token].holdingPeriod[_from] + YEAR >= now) {
+      return CHECK_EHOLDING_PERIOD;
+    }
+
     return CHECK_SUCCESS;
   }
 
@@ -338,6 +394,10 @@ contract RegulatorService is RegulatorServiceI, Ownable {
 
     if (_reason == CHECK_EDIVIS) {
       return EDIVIS_MESSAGE;
+    }
+
+    if (_reason == CHECK_EHOLDING_PERIOD) {
+      return EHOLDING_PERIOD_MESSAGE;
     }
 
     return SUCCESS_MESSAGE;

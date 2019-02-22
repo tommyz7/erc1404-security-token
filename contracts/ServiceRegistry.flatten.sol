@@ -1,5 +1,7 @@
 pragma solidity ^0.4.24;
 
+// File: zeppelin-solidity/contracts/ownership/Ownable.sol
+
 /**
  * @title Ownable
  * @dev The Ownable contract has an owner address, and provides basic authorization control
@@ -61,6 +63,8 @@ contract Ownable {
     owner = _newOwner;
   }
 }
+
+// File: contracts/ServiceRegistry.sol
 
 /**
    Copyright (c) 2017 Harbor Platform, Inc.

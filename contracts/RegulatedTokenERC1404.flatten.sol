@@ -1,5 +1,6 @@
 pragma solidity ^0.4.24;
 
+// File: zeppelin-solidity/contracts/token/ERC20/ERC20Basic.sol
 
 /**
  * @title ERC20Basic
@@ -13,6 +14,7 @@ contract ERC20Basic {
   event Transfer(address indexed from, address indexed to, uint256 value);
 }
 
+// File: zeppelin-solidity/contracts/token/ERC20/ERC20.sol
 
 /**
  * @title ERC20 interface
@@ -33,6 +35,7 @@ contract ERC20 is ERC20Basic {
   );
 }
 
+// File: contracts/ERC1404.sol
 
 contract ERC1404 is ERC20 {
     /// @notice Detects if a transfer will be reverted and if so returns an appropriate reference code
@@ -50,6 +53,7 @@ contract ERC1404 is ERC20 {
     function messageForTransferRestriction (uint8 restrictionCode) public view returns (string);
 }
 
+// File: contracts/RegulatorServiceI.sol
 
 /**
    Copyright (c) 2017 Harbor Platform, Inc.
@@ -91,6 +95,7 @@ contract RegulatorServiceI {
   function check(address _token, address _spender, address _from, address _to, uint256 _amount) public returns (uint8);
 }
 
+// File: zeppelin-solidity/contracts/ownership/Ownable.sol
 
 /**
  * @title Ownable
@@ -154,6 +159,7 @@ contract Ownable {
   }
 }
 
+// File: zeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol
 
 /**
  * @title DetailedERC20 token
@@ -173,6 +179,7 @@ contract DetailedERC20 is ERC20 {
   }
 }
 
+// File: contracts/RegulatorService.sol
 
 /**
  * @title  On-chain RegulatorService implementation for approving trades
@@ -203,7 +210,17 @@ contract RegulatorService is RegulatorServiceI, Ownable {
      *      transfers allowed).
      */
     bool partialTransfers;
+
+    /**
+     * @dev Mappning for 12 months hold up period for investors.
+     * @param  address investors wallet
+     * @param  uint256 holdingPeriod start date in unix
+     */
+    mapping(address => uint256) holdingPeriod;
   }
+
+  // @dev number of seconds in a year = 365 * 24 * 60 * 60
+  uint256 constant private YEAR = 1 years;
 
   // @dev Check success code & message
   uint8 constant private CHECK_SUCCESS = 0;
@@ -224,6 +241,9 @@ contract RegulatorService is RegulatorServiceI, Ownable {
   // @dev Check error reason: Receiver is not allowed to receive the token
   uint8 constant private CHECK_ERECV = 4;
   string constant private ERECV_MESSAGE = 'Receiver is not allowed to receive the token';
+
+  uint8 constant private CHECK_EHOLDING_PERIOD = 5;
+  string constant private EHOLDING_PERIOD_MESSAGE = 'Sender is still in 12 months holding period';
 
   /// @dev Permission bits for allowing a participant to send tokens
   uint8 constant private PERM_SEND = 0x1;
@@ -253,6 +273,10 @@ contract RegulatorService is RegulatorServiceI, Ownable {
 
   /// @dev Event raised when the admin address changes
   event LogTransferAdmin(address indexed oldAdmin, address indexed newAdmin);
+
+  /// @dev Event raised when holding period start date is set for participant
+  event LogHoldingPeriod(
+    address indexed _token, address indexed _participant, uint256 _startDate);
 
   constructor() public {
     admin = msg.sender;
@@ -302,6 +326,18 @@ contract RegulatorService is RegulatorServiceI, Ownable {
   }
 
   /**
+   * @notice Set initial holding period for investor
+   * @param _token       token address
+   * @param _participant participant address
+   * @param _startDate   start date of holding period in UNIX format
+   */
+  function setHoldingPeriod(address _token, address _participant, uint256 _startDate) onlyAdmins public {
+    settings[_token].holdingPeriod[_participant] = _startDate;
+
+    emit LogHoldingPeriod(_token, _participant, _startDate);
+  }
+
+  /**
    * @dev Allows the owner to transfer admin controls to newAdmin.
    *
    * @param newAdmin The address to transfer admin rights to.
@@ -346,6 +382,10 @@ contract RegulatorService is RegulatorServiceI, Ownable {
       return CHECK_EDIVIS;
     }
 
+    if (settings[_token].holdingPeriod[_from] + YEAR >= now) {
+      return CHECK_EHOLDING_PERIOD;
+    }
+
     return CHECK_SUCCESS;
   }
 
@@ -374,6 +414,10 @@ contract RegulatorService is RegulatorServiceI, Ownable {
       return EDIVIS_MESSAGE;
     }
 
+    if (_reason == CHECK_EHOLDING_PERIOD) {
+      return EHOLDING_PERIOD_MESSAGE;
+    }
+
     return SUCCESS_MESSAGE;
   }
 
@@ -389,6 +433,7 @@ contract RegulatorService is RegulatorServiceI, Ownable {
   }
 }
 
+// File: contracts/ServiceRegistry.sol
 
 /**
    Copyright (c) 2017 Harbor Platform, Inc.
@@ -456,6 +501,7 @@ contract ServiceRegistry is Ownable {
   }
 }
 
+// File: zeppelin-solidity/contracts/math/SafeMath.sol
 
 /**
  * @title SafeMath
@@ -507,6 +553,7 @@ library SafeMath {
   }
 }
 
+// File: zeppelin-solidity/contracts/token/ERC20/BasicToken.sol
 
 /**
  * @title Basic token
@@ -552,6 +599,7 @@ contract BasicToken is ERC20Basic {
 
 }
 
+// File: zeppelin-solidity/contracts/token/ERC20/BurnableToken.sol
 
 /**
  * @title Burnable Token
@@ -581,6 +629,7 @@ contract BurnableToken is BasicToken {
   }
 }
 
+// File: zeppelin-solidity/contracts/token/ERC20/StandardToken.sol
 
 /**
  * @title Standard ERC20 token
@@ -701,6 +750,7 @@ contract StandardToken is ERC20, BasicToken {
 
 }
 
+// File: zeppelin-solidity/contracts/token/ERC20/MintableToken.sol
 
 /**
  * @title Mintable token
@@ -757,6 +807,7 @@ contract MintableToken is StandardToken, Ownable {
   }
 }
 
+// File: contracts/RegulatedToken.sol
 
 /**
    Copyright (c) 2017 Harbor Platform, Inc.
@@ -883,6 +934,7 @@ contract RegulatedToken is DetailedERC20, MintableToken, BurnableToken {
   }
 }
 
+// File: contracts/RegulatedTokenERC1404.sol
 
 contract RegulatedTokenERC1404 is ERC1404, RegulatedToken {
     constructor(ServiceRegistry _registry, string _name, string _symbol) public
