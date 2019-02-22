@@ -33,7 +33,17 @@ contract RegulatorService is RegulatorServiceI, Ownable {
      *      transfers allowed).
      */
     bool partialTransfers;
+
+    /**
+     * @dev Mappning for 12 months hold up period for investors.
+     * @param  address investors wallet
+     * @param  uint256 holdingPeriod start date in unix
+     */
+    mapping(address => uint256) holdingPeriod;
   }
+
+  // @dev number of seconds in a year = 365 * 24 * 60 * 60
+  uint256 constant private YEAR = 1 years;
 
   // @dev Check success code & message
   uint8 constant private CHECK_SUCCESS = 0;
@@ -54,6 +64,9 @@ contract RegulatorService is RegulatorServiceI, Ownable {
   // @dev Check error reason: Receiver is not allowed to receive the token
   uint8 constant private CHECK_ERECV = 4;
   string constant private ERECV_MESSAGE = 'Receiver is not allowed to receive the token';
+
+  uint8 constant private CHECK_EHOLDING_PERIOD = 5;
+  string constant private EHOLDING_PERIOD_MESSAGE = 'Sender is still in 12 months holding period';
 
   /// @dev Permission bits for allowing a participant to send tokens
   uint8 constant private PERM_SEND = 0x1;
@@ -83,6 +96,10 @@ contract RegulatorService is RegulatorServiceI, Ownable {
 
   /// @dev Event raised when the admin address changes
   event LogTransferAdmin(address indexed oldAdmin, address indexed newAdmin);
+
+  /// @dev Event raised when holding period start date is set for participant
+  event LogHoldingPeriod(
+    address indexed _token, address indexed _participant, uint256 _startDate);
 
   constructor() public {
     admin = msg.sender;
@@ -132,6 +149,18 @@ contract RegulatorService is RegulatorServiceI, Ownable {
   }
 
   /**
+   * @notice Set initial holding period for investor
+   * @param _token       token address
+   * @param _participant participant address
+   * @param _startDate   start date of holding period in UNIX format
+   */
+  function setHoldingPeriod(address _token, address _participant, uint256 _startDate) onlyAdmins public {
+    settings[_token].holdingPeriod[_participant] = _startDate;
+
+    emit LogHoldingPeriod(_token, _participant, _startDate);
+  }
+
+  /**
    * @dev Allows the owner to transfer admin controls to newAdmin.
    *
    * @param newAdmin The address to transfer admin rights to.
@@ -176,6 +205,10 @@ contract RegulatorService is RegulatorServiceI, Ownable {
       return CHECK_EDIVIS;
     }
 
+    if (settings[_token].holdingPeriod[_from] + YEAR >= now) {
+      return CHECK_EHOLDING_PERIOD;
+    }
+
     return CHECK_SUCCESS;
   }
 
@@ -202,6 +235,10 @@ contract RegulatorService is RegulatorServiceI, Ownable {
 
     if (_reason == CHECK_EDIVIS) {
       return EDIVIS_MESSAGE;
+    }
+
+    if (_reason == CHECK_EHOLDING_PERIOD) {
+      return EHOLDING_PERIOD_MESSAGE;
     }
 
     return SUCCESS_MESSAGE;
