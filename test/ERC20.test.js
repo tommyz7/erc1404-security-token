@@ -89,12 +89,12 @@ contract('Ownable', function (accounts) {
 
 
 contract('BaseToken', function ([_, owner, recipient, anotherAccount]) {
-
+  let originalOwnerMintValue = web3.utils.toWei('0.1', 'ether');
   beforeEach(async function () {
     this.service = await RegulatorService.new({from: owner})
     this.registry = await ServiceRegistry.new(this.service.address)
     this.token = await RegulatedTokenERC1404.new(this.registry.address, tokenName, tokenSymbol);
-    let result = await this.token.mint(owner, 100);
+    let result = await this.token.mint(owner, originalOwnerMintValue);
     await this.service.setPermission(this.token.address, owner, PERM_TRANSFER, {from: owner})
     await this.service.setPermission(this.token.address, recipient, PERM_RECEIVE, {from: owner})
     await this.service.setPartialTransfers(this.token.address, true, {from: owner})
@@ -104,7 +104,7 @@ contract('BaseToken', function ([_, owner, recipient, anotherAccount]) {
     it('returns the total amount of tokens', async function () {
       const totalSupply = await this.token.totalSupply();
 
-      assert.equal(totalSupply, 100);
+      assert.equal(totalSupply, originalOwnerMintValue);
     });
   });
 
@@ -121,7 +121,7 @@ contract('BaseToken', function ([_, owner, recipient, anotherAccount]) {
       it('returns the total amount of tokens', async function () {
         const balance = await this.token.balanceOf(owner);
 
-        assert.equal(balance, 100);
+        assert.equal(balance, originalOwnerMintValue);
       });
     });
   });
@@ -131,7 +131,7 @@ contract('BaseToken', function ([_, owner, recipient, anotherAccount]) {
       const to = recipient;
 
       describe('when the sender does not have enough balance', function () {
-        const amount = 101;
+        const amount = web3.utils.toWei('0.101', 'ether');
 
         it('reverts', async function () {
           await assertRevert(this.token.transfer(to, amount, { from: owner }));
@@ -139,7 +139,7 @@ contract('BaseToken', function ([_, owner, recipient, anotherAccount]) {
       });
 
       describe('when the sender has enough balance', function () {
-        const amount = 100;
+        const amount = originalOwnerMintValue;
 
         it('transfers the requested amount', async function () {
           await this.token.transfer(to, amount, { from: owner });
@@ -153,11 +153,10 @@ contract('BaseToken', function ([_, owner, recipient, anotherAccount]) {
 
         it('emits a transfer event', async function () {
           const { logs } = await this.token.transfer(to, amount, { from: owner });
-
           const event = await inLogs(logs, 'Transfer');
           event.args.from.should.eq(owner);
           event.args.to.should.eq(to);
-          event.args.value.toNumber().should.equal(amount);
+          event.args.value.toString().should.equal(amount.toString());
         });
       });
     });
@@ -166,7 +165,7 @@ contract('BaseToken', function ([_, owner, recipient, anotherAccount]) {
       const to = ZERO_ADDRESS;
 
       it('reverts', async function () {
-        await assertRevert(this.token.transfer(to, 100, { from: owner }));
+        await assertRevert(this.token.transfer(to, originalOwnerMintValue, { from: owner }));
       });
     });
   });
@@ -680,14 +679,14 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
 
     await this.service.setPartialTransfers(this.token.address, true, {from: owner})
 
-    let result = await this.token.mint(owner, 100);
+    let result = await this.token.mint(owner, web3.utils.toWei('0.1', 'ether'));
   });
 
   describe('total supply', function () {
     it('returns the total amount of tokens', async function () {
       const totalSupply = await this.token.totalSupply();
 
-      assert.equal(totalSupply, 100);
+      assert.equal(totalSupply, web3.utils.toWei('0.1', 'ether'));
     });
   });
 
@@ -704,7 +703,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
       it('returns the total amount of tokens', async function () {
         const balance = await this.token.balanceOf(owner);
 
-        assert.equal(balance, 100);
+        assert.equal(balance, web3.utils.toWei('0.1', 'ether'));
       });
     });
   });
@@ -714,7 +713,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
       const to = recipient;
 
       describe('when the sender does not have enough balance', function () {
-        const amount = 101;
+        const amount = web3.utils.toWei('0.101', 'ether');
 
         it('reverts', async function () {
           await assertRevert(this.token.transfer(to, amount, { from: owner }));
@@ -722,7 +721,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
       });
 
       describe('when the sender has enough balance', function () {
-        const amount = 100;
+        const amount = web3.utils.toWei('0.1', 'ether');
 
         it('transfers the requested amount', async function () {
           await this.token.transfer(to, amount, { from: owner });
@@ -740,7 +739,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
           const event = await inLogs(logs, 'Transfer');
           event.args.from.should.eq(owner);
           event.args.to.should.eq(to);
-          event.args.value.toNumber().should.equal(amount);
+          event.args.value.toString().should.equal(amount.toString());
         });
       });
     });
@@ -749,7 +748,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
       const to = ZERO_ADDRESS;
 
       it('reverts', async function () {
-        await assertRevert(this.token.transfer(to, 100, { from: owner }));
+        await assertRevert(this.token.transfer(to, web3.utils.toWei('0.1', 'ether'), { from: owner }));
       });
     });
   });
@@ -759,7 +758,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
       const spender = recipient;
 
       describe('when the sender has enough balance', function () {
-        const amount = 100;
+        const amount = web3.utils.toWei('0.1', 'ether');
 
         it('emits an approval event', async function () {
           const { logs } = await this.token.approve(spender, amount, { from: owner });
@@ -768,7 +767,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
           assert.equal(logs[0].event, 'Approval');
           assert.equal(logs[0].args.owner, owner);
           assert.equal(logs[0].args.spender, spender);
-          logs[0].args.value.toNumber().should.eq(amount);
+          logs[0].args.value.toString().should.eq(amount.toString());
         });
 
         describe('when there was no approved amount before', function () {
@@ -795,7 +794,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
       });
 
       describe('when the sender does not have enough balance', function () {
-        const amount = 101;
+        const amount = web3.utils.toWei('0.101', 'ether');
 
         it('emits an approval event', async function () {
           const { logs } = await this.token.approve(spender, amount, { from: owner });
@@ -804,7 +803,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
           assert.equal(logs[0].event, 'Approval');
           assert.equal(logs[0].args.owner, owner);
           assert.equal(logs[0].args.spender, spender);
-          logs[0].args.value.toNumber().should.eq(amount);
+          logs[0].args.value.toString().should.eq(amount.toString());
         });
 
         describe('when there was no approved amount before', function () {
@@ -832,7 +831,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
     });
 
     describe('when the spender is the zero address', function () {
-      const amount = 100;
+      const amount = web3.utils.toWei('0.1', 'ether');
       const spender = ZERO_ADDRESS;
 
       it('approves the requested amount', async function () {
@@ -849,7 +848,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
         assert.equal(logs[0].event, 'Approval');
         assert.equal(logs[0].args.owner, owner);
         assert.equal(logs[0].args.spender, spender);
-        logs[0].args.value.toNumber().should.eq(amount);
+        logs[0].args.value.toString().should.eq(amount.toString());
       });
     });
   });
@@ -862,11 +861,11 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
 
       describe('when the spender has enough approved balance', function () {
         beforeEach(async function () {
-          await this.token.approve(spender, 100, { from: owner });
+          await this.token.approve(spender, web3.utils.toWei('0.1', 'ether'), { from: owner });
         });
 
         describe('when the owner has enough balance', function () {
-          const amount = 100;
+          const amount = web3.utils.toWei('0.1', 'ether');
 
           it('transfers the requested amount', async function () {
             let tx = await this.token.transferFrom(owner, to, amount, { from: spender });
@@ -875,14 +874,14 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
             assert.equal(senderBalance.toNumber(), 0);
 
             const recipientBalance = await this.token.balanceOf(to);
-            assert.equal(recipientBalance.toNumber(), amount);
+            assert.equal(recipientBalance.toString(), amount.toString());
           });
 
           it('decreases the spender allowance', async function () {
             await this.token.transferFrom(owner, to, amount, { from: spender });
 
             const allowance = await this.token.allowance(owner, spender);
-            allowance.toNumber().should.eq(0);
+            allowance.toString().should.eq('0');
           });
 
           it('emits a transfer event', async function () {
@@ -890,12 +889,12 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
             const event = await inLogs(logs, 'Transfer');
             event.args.from.should.eq(owner);
             event.args.to.should.eq(to);
-            event.args.value.toNumber().should.equal(amount);
+            event.args.value.toString().should.equal(amount.toString());
           });
         });
 
         describe('when the owner does not have enough balance', function () {
-          const amount = 101;
+          const amount = web3.utils.toWei('0.101', 'ether');
 
           it('reverts', async function () {
             await assertRevert(this.token.transferFrom(owner, to, amount, { from: spender }));
@@ -909,7 +908,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
         });
 
         describe('when the owner has enough balance', function () {
-          const amount = 100;
+          const amount = web3.utils.toWei('0.1', 'ether');
 
           it('reverts', async function () {
             await assertRevert(this.token.transferFrom(owner, to, amount, { from: spender }));
@@ -917,7 +916,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
         });
 
         describe('when the owner does not have enough balance', function () {
-          const amount = 101;
+          const amount = web3.utils.toWei('0.101', 'ether');
 
           it('reverts', async function () {
             await assertRevert(this.token.transferFrom(owner, to, amount, { from: spender }));
@@ -927,7 +926,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
     });
 
     describe('when the recipient is the zero address', function () {
-      const amount = 100;
+      const amount = web3.utils.toWei('0.1', 'ether');
       const to = ZERO_ADDRESS;
 
       beforeEach(async function () {
@@ -954,7 +953,7 @@ contract('StandardToken', function ([_, owner, recipient, anotherAccount]) {
           assert.equal(logs[0].event, 'Approval');
           assert.equal(logs[0].args.owner, owner);
           assert.equal(logs[0].args.spender, spender);
-          logs[0].args.value.toNumber().should.eq(0);
+          logs[0].args.value.toString().should.eq('0');
         });
 
         describe('when there was no approved amount before', function () {

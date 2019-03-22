@@ -68,6 +68,11 @@ contract RegulatorService is RegulatorServiceI, Ownable {
   uint8 constant private CHECK_EHOLDING_PERIOD = 5;
   string constant private EHOLDING_PERIOD_MESSAGE = 'Sender is still in 12 months holding period';
 
+  uint8 constant private CHECK_EDECIMALS = 6;
+  string constant private EDECIMALS_MESSAGE = 'Transfer value must be bigger than 0.000001 or 1 szabo';
+
+  uint256 constant public MINIMAL_TRANSFER = 1 szabo;
+
   /// @dev Permission bits for allowing a participant to send tokens
   uint8 constant private PERM_SEND = 0x1;
 
@@ -209,6 +214,10 @@ contract RegulatorService is RegulatorServiceI, Ownable {
       return CHECK_EHOLDING_PERIOD;
     }
 
+    if (_amount < MINIMAL_TRANSFER) {
+      return CHECK_EDECIMALS;
+    }
+
     return CHECK_SUCCESS;
   }
 
@@ -239,6 +248,10 @@ contract RegulatorService is RegulatorServiceI, Ownable {
 
     if (_reason == CHECK_EHOLDING_PERIOD) {
       return EHOLDING_PERIOD_MESSAGE;
+    }
+
+    if (_reason == CHECK_EDECIMALS) {
+      return EDECIMALS_MESSAGE;
     }
 
     return SUCCESS_MESSAGE;

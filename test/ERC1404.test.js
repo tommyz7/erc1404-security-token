@@ -8,8 +8,8 @@ var BN = web3.utils.BN;
 contract('ERC1404', ([sender, recipient, ...accounts]) => {
   const owner = sender
   const initialAccount = sender
-  const transferValue = '100000000000000000'
-  const initialBalance = '100000000000000000000'
+  const transferValue = web3.utils.toWei('0.1', 'ether')
+  const initialBalance = web3.utils.toWei('100', 'ether')
   
   const CHECK_SUCCESS = 0
   const SUCCESS_MESSAGE = 'Success'
@@ -23,6 +23,8 @@ contract('ERC1404', ([sender, recipient, ...accounts]) => {
   const ERECV_MESSAGE = 'Receiver is not allowed to receive the token'
   const CHECK_EHOLDING_PERIOD = 5
   const EHOLDING_PERIOD_MESSAGE = 'Sender is still in 12 months holding period'
+  const CHECK_EDECIMALS = 6
+  const EDECIMALS_MESSAGE = 'Transfer value must be bigger than 0.000001 or 1 szabo'
   
   const PERM_SEND = 0x1
   const PERM_RECEIVE = 0x2
@@ -180,5 +182,31 @@ contract('ERC1404', ([sender, recipient, ...accounts]) => {
     assert.equal(senderBalanceAfter.toString(), senderBalanceBefore.sub(new BN(transferValue)).toString())
     assert.equal(recipientBalanceAfter.toString(), recipientBalanceBefore.add(new BN(transferValue)).toString())
     // TODO: find a way to reverse time increase
+  })
+
+  it('should disallow transfers of token lower than 6 decimal points', async () => {
+    let minimalTransfer = web3.utils.toWei('0.000001', 'ether')
+    let failValue = web3.utils.toWei('0.000000999999999999', 'ether')
+
+    assert.equal(minimalTransfer, await service.MINIMAL_TRANSFER(), "Minimal transfer incorrect")
+
+    let tx = await token.transfer(recipient, failValue, { from: sender })
+    assert.equal(tx.logs[0].args.reason, CHECK_EDECIMALS, "Reason should be CHECK_EDECIMALS")
+
+    const reason = await token.detectTransferRestriction(sender, recipient, failValue)
+    const message = await token.messageForTransferRestriction(reason)
+    assert.equal(reason, CHECK_EDECIMALS)
+    assert.equal(message, EDECIMALS_MESSAGE)
+
+    tx = await token.transfer(recipient, transferValue, { from: sender })
+    assert.equal(tx.logs[1].args.from, sender)
+    assert.equal(tx.logs[1].args.to, recipient)
+    assert.equal(tx.logs[1].args.value, transferValue)
+    
+    const senderBalanceAfter = await token.balanceOf(sender)
+    const recipientBalanceAfter = await token.balanceOf(recipient)
+    assert.equal(senderBalanceAfter.toString(), senderBalanceBefore.sub(new BN(transferValue)).toString())
+    assert.equal(recipientBalanceAfter.toString(), recipientBalanceBefore.add(new BN(transferValue)).toString())
+
   })
 })

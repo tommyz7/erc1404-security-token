@@ -31,6 +31,8 @@ const EDIVIS = 2;
 const ESEND = 3;
 const ERECV = 4;
 
+let transferValue = web3.utils.toWei('1', 'ether');
+
 contract('RegulatorService', async accounts => {
   let owner, other, spender, admin, account;
   let service, token;
@@ -109,9 +111,9 @@ contract('RegulatorService', async accounts => {
 
     it('toggles the ability to trade', async () => {
       await service.setLocked(token.address, true);
-      assertResult(await service.check.call(token.address, spender, owner, account, 0), false, ELOCKED);
+      assertResult(await service.check.call(token.address, spender, owner, account, transferValue), false, ELOCKED);
       await service.setLocked(token.address, false);
-      assertResult(await service.check.call(token.address, spender, owner, account, 0), true, ENONE);
+      assertResult(await service.check.call(token.address, spender, owner, account, transferValue), true, ENONE);
     });
 
     it('logs an event', async () => {
@@ -214,24 +216,24 @@ contract('RegulatorService', async accounts => {
         await service.setPermission(token.address, owner, PERM_SEND);
         await service.setPermission(token.address, account, PERM_RECEIVE);
 
-        assertResult(await service.check.call(token.address, spender, owner, account, 0), true, ENONE);
+        assertResult(await service.check.call(token.address, spender, owner, account, transferValue), true, ENONE);
 
         await service.setPermission(token.address, owner, PERM_RECEIVE);
         await service.setPermission(token.address, account, PERM_RECEIVE);
 
-        assertResult(await service.check.call(token.address, spender, owner, account, 0), false, ESEND);
+        assertResult(await service.check.call(token.address, spender, owner, account, transferValue), false, ESEND);
       });
 
       it('requires a receiver to have receive permissions', async () => {
         await service.setPermission(token.address, owner, PERM_SEND);
         await service.setPermission(token.address, account, PERM_RECEIVE);
 
-        assertResult(await service.check.call(token.address, spender, owner, account, 0), true, ENONE);
+        assertResult(await service.check.call(token.address, spender, owner, account, transferValue), true, ENONE);
 
         await service.setPermission(token.address, owner, PERM_TRANSFER);
         await service.setPermission(token.address, account, PERM_SEND);
 
-        assertResult(await service.check.call(token.address, spender, owner, account, 0), false, ERECV);
+        assertResult(await service.check.call(token.address, spender, owner, account, transferValue), false, ERECV);
       });
     });
 
@@ -239,12 +241,12 @@ contract('RegulatorService', async accounts => {
       beforeEach(async () => {
         await service.setPermission(token.address, owner, PERM_TRANSFER);
         await service.setPermission(token.address, account, PERM_TRANSFER);
-        assertResult(await service.check.call(token.address, spender, owner, account, 0), true, ENONE);
+        assertResult(await service.check.call(token.address, spender, owner, account, transferValue), true, ENONE);
       });
 
       it('denies trades', async () => {
-        assertResult(await service.check.call(token.address, spender, owner, ZERO_ADDRESS, 0), false, ERECV);
-        assertResult(await service.check.call(token.address, spender, ZERO_ADDRESS, owner, 0), false, ESEND);
+        assertResult(await service.check.call(token.address, spender, owner, ZERO_ADDRESS, transferValue), false, ERECV);
+        assertResult(await service.check.call(token.address, spender, ZERO_ADDRESS, owner, transferValue), false, ESEND);
       });
     });
 
@@ -252,13 +254,13 @@ contract('RegulatorService', async accounts => {
       beforeEach(async () => {
         await service.setPermission(token.address, owner, PERM_NONE);
         await service.setPermission(token.address, account, PERM_NONE);
-        assertResult(await service.check.call(token.address, spender, owner, account, 0), false, ESEND);
+        assertResult(await service.check.call(token.address, spender, owner, account, transferValue), false, ESEND);
       });
 
       it('allows trades', async () => {
         await service.setPermission(token.address, owner, PERM_TRANSFER);
         await service.setPermission(token.address, account, PERM_TRANSFER);
-        assertResult(await service.check.call(token.address, spender, owner, account, 0), true, ENONE);
+        assertResult(await service.check.call(token.address, spender, owner, account, transferValue), true, ENONE);
       });
     });
 
@@ -266,19 +268,19 @@ contract('RegulatorService', async accounts => {
       beforeEach(async () => {
         await service.setPermission(token.address, owner, PERM_TRANSFER);
         await service.setPermission(token.address, account, PERM_TRANSFER);
-        assertResult(await service.check.call(token.address, spender, owner, account, 0), true, ENONE);
+        assertResult(await service.check.call(token.address, spender, owner, account, transferValue), true, ENONE);
       });
 
       it('prevents trades', async () => {
         await service.setPermission(token.address, owner, PERM_TRANSFER);
         await service.setPermission(token.address, account, PERM_NONE);
 
-        assertResult(await service.check.call(token.address, spender, owner, account, 0), false, ERECV);
+        assertResult(await service.check.call(token.address, spender, owner, account, transferValue), false, ERECV);
 
         await service.setPermission(token.address, owner, PERM_NONE);
         await service.setPermission(token.address, account, PERM_TRANSFER);
 
-        assertResult(await service.check.call(token.address, spender, owner, account, 0), false, ESEND);
+        assertResult(await service.check.call(token.address, spender, owner, account, transferValue), false, ESEND);
       });
     });
 
@@ -286,13 +288,13 @@ contract('RegulatorService', async accounts => {
       beforeEach(async () => {
         await service.setPermission(token.address, owner, PERM_TRANSFER);
         await service.setPermission(token.address, account, PERM_TRANSFER);
-        assertResult(await service.check.call(token.address, spender, owner, account, 0), true, ENONE);
+        assertResult(await service.check.call(token.address, spender, owner, account, transferValue), true, ENONE);
       });
 
       it('prevents trades', async () => {
         await service.setPermission(token.address, owner, PERM_NONE);
         await service.setPermission(token.address, account, PERM_NONE);
-        assertResult(await service.check.call(token.address, spender, owner, account, 0), false, ESEND);
+        assertResult(await service.check.call(token.address, spender, owner, account, transferValue), false, ESEND);
       });
     });
   });
