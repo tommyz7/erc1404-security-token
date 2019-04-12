@@ -69,13 +69,13 @@ module.exports = {
       gas: 6721975
     },
     rinkeby: {
-      provider: () => new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io'),
-      network_id: '*',
+      provider: new HDWalletProvider(mnemonic, 'https://rinkeby.infura.io/v3/78c96eb81d45415e9db65dc540e745ef'),
+      network_id: '4',
       gas: 500000,
       gasPrice: 5000000000
     },
     mainnet: {
-      provider: () => new HDWalletProvider(mnemonic, 'https://mainnet.infura.io'),
+      provider: new HDWalletProvider(mnemonic, 'https://mainnet.infura.io/v3/78c96eb81d45415e9db65dc540e745ef'),
       network_id: 1,
       gas: 8000000,
       gasPrice: 6000000000
