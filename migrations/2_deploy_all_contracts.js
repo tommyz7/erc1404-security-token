@@ -3,8 +3,8 @@ var RegulatorService = artifacts.require("./RegulatorService.sol");
 var ServiceRegistry = artifacts.require("./ServiceRegistry.sol");
 
 module.exports = async function(deployer, network, accounts) {
-  let name = "Evaki"
-  let symbol = "EVK"
+  let name = "Royal Swiss Token Issue 100"
+  let symbol = "RST100"
   let regulatorService, serviceRegistry;
 
   await deployer.deploy(RegulatorService, {gas: 6000000});
