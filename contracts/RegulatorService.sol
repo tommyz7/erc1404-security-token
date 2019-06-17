@@ -153,6 +153,10 @@ contract RegulatorService is RegulatorServiceI, Ownable {
     emit LogPermissionSet(_token, _participant, _permission);
   }
 
+  function checkPermission(address _token, address _participant) public view returns (uint8) {
+    return participants[_token][_participant];
+  }
+
   /**
    * @notice Set initial holding period for investor
    * @param _token       token address
@@ -219,6 +223,10 @@ contract RegulatorService is RegulatorServiceI, Ownable {
     }
 
     return CHECK_SUCCESS;
+  }
+
+  function checkTransfer(address _token, address _spender, address _from, address _to, uint256 _amount) public view returns (uint8) {
+    return check(_token, _spender, _from, _to, _amount);
   }
 
   /**
